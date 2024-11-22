@@ -9,6 +9,7 @@ export default {
         './resources/**/*.js',
         './resources/**/*.vue',
     ],
+    darkMode: 'class',
     theme: {
         extend: {
             fontFamily: {
@@ -16,5 +17,7 @@ export default {
             },
         },
     },
-    plugins: [],
+    plugins: [
+        require('@tailwindcss/forms'), // Plugin para formularios
+    ],
 };

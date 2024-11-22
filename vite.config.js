@@ -8,4 +8,13 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        host:true,
+        watch: {
+            ignored: [
+                '**/glibc-2.28/**', // Ignorar el directorio glibc-2.28
+                '**/node_modules/**', // Por seguridad, también ignoramos node_modules
+            ],
+        },
+    },
 });

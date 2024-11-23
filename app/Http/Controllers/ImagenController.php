@@ -1,8 +1,9 @@
 <?php
+    
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Aws\S3\S3Client;
+use Illuminate\Support\Facades\Storage;
 
 class ImagenController extends Controller
 {
@@ -10,38 +11,25 @@ class ImagenController extends Controller
     {
         // Validar el archivo
         $request->validate([
-            'file' => 'required|file|mimes:jpeg,png,jpg,gif,doc,docx,pdf,txt,zip|max:5120',
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
-        // Inicializar el cliente S3
-        $s3 = new S3Client([
-            'version' => 'latest',
-            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
-        ]);
-
-        // Obtener el archivo
-        $file = $request->file('file');
-        $fileName = uniqid() . '-' . $file->getClientOriginalName();
-        $bucket = env('AWS_BUCKET', 'tu-bucket');
+        // Subir el archivo al bucket S3 en una ubicación temporal
+        $tempPath = 'temp/';
+        $fileName = uniqid() . '-' . $request->file('file')->getClientOriginalName();
+        $filePath = $tempPath . $fileName;
 
         try {
-            // Subir el archivo al bucket
-            $result = $s3->putObject([
-                'Bucket' => $bucket,
-                'Key' => "archivos/$fileName", // Carpeta 'archivos' en el bucket
-                'SourceFile' => $file->getPathname(),
-                'ACL' => 'public-read', // Si necesitas acceso público
-            ]);
+            $request->file('file')->storeAs($tempPath, $fileName, 's3');
+            $fileUrl = Storage::disk('s3')->url($filePath);
 
-            // Retornar la URL del archivo
+            // Retornar la URL al frontend
             return response()->json([
-                'archivo' => $result['ObjectURL'],
+                'archivo' => $filePath,
+                'url' => $fileUrl,
             ]);
-
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

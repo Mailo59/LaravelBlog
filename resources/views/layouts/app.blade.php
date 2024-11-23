@@ -8,6 +8,7 @@
         <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
         <title>LaravelBlog -  @yield('cabecera')</title>
         @vite('resources/css/app.css')
+        @vite('resources/js/app.js')
     </head>
     <body class="bg-black">
     <header class="p-3 border-b-2 bg-black shadow shadow-gray-100">

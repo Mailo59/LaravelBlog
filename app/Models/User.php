@@ -2,34 +2,29 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes; // Se agrega SoftDeletes para habilitar los borrados suaves
+    use Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que se pueden asignar de manera masiva.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'profile_picture',
-        'role',
-        'is_active',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Los atributos que deben ocultarse para arrays.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $hidden = [
         'password',
@@ -37,24 +32,34 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast to native types.
+     * Los atributos que deben ser convertidos a tipos nativos.
      *
-     * @return array<string, string>
+     * @var array
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
 
     /**
-     * The attributes that should be cast to dates.
-     *
-     * @var array<int, string>
+     * Método boot para manejar eventos del modelo.
      */
-    protected $dates = [
-        'deleted_at', // Indica que el atributo deleted_at debe tratarse como una fecha
-    ];
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            // Nombre de la carpeta que se creará en el bucket
+            $folderName = "usuarios/{$user->id}/"; // Usa "{$user->name}/" si prefieres basarlo en el nombre del usuario
+
+            try {
+                // Intentar crear un archivo vacío en la carpeta para simular su existencia
+                Storage::disk('s3')->put("$folderName.placeholder", ''); // "placeholder" asegura que S3 cree la estructura
+            } catch (\Exception $e) {
+                \Log::error("Error al crear carpeta en S3 para el usuario {$user->id}: {$e->getMessage()}");
+            }
+        });
+    }
+    public function posts()
+{
+    return $this->hasMany(Post::class);
+}
+
 }

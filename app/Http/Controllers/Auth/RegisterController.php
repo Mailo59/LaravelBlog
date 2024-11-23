@@ -42,6 +42,6 @@ class RegisterController extends Controller
         Auth::login($user);
 
         // Redirigir al dashboard o página principal
-        return redirect('/dashboard');
+        return redirect('/principal');
     }
 }
